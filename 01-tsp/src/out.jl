@@ -31,16 +31,16 @@ function plot_tour(
 	edges::Vector{Tuple{Int,Int}};
 	highlight::Vector{Int} = Int[]
 )
-    plt = Plots.plot()
-    for (i, j) in edges
-    	color = ((i in highlight) && (j in highlight)) ? :red : :black
-    	Plots.plot!(
-        	[dat.coords[i, 1], dat.coords[j, 1]], 
-        	[dat.coords[i, 2], dat.coords[j, 2]],
-        	lc=color, lw=2; 
-        	legend = false)
-    end
-    return plt
+	plt = Plots.plot()
+	for (i, j) in edges
+		color = ((i in highlight) && (j in highlight)) ? :red : :black
+		Plots.plot!(
+			[dat.coords[i, 1], dat.coords[j, 1]], 
+			[dat.coords[i, 2], dat.coords[j, 2]],
+			lc=color, lw=2; 
+			legend = false)
+	end
+	return plt
 end
 # Overload function
 plot_tour(solution::TSPSolution) = plot_tour(solution.dat, solution.edges)

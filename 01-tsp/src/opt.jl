@@ -26,19 +26,19 @@ function TSPModel(dat::TSPInstance;
 		"OutputFlag" => OutputFlag,
 		"TimeLimit" => TimeLimit)
 	)
-    @variable(model, x[1:n, 1:n], Bin) # x[i, j] = 1 if edge (i, j) is used in the tour
-    @objective(model, Min, sum(d .* x))
-    @constraint(model, outflow[i in 1:n], sum(x[i, :]) == 1)
-    @constraint(model, inflow[i in 1:n], sum(x[:, i]) == 1)
-    @constraint(model, noself[i in 1:n], x[i, i] == 0)
-    @constraint(model, subtour1[i in 1:n, j in 1:n], x[i, j] + x[j, i] <= 1)
-    return TSPModel(dat, model, x, Dict())
+	@variable(model, x[1:n, 1:n], Bin) # x[i, j] = 1 if edge (i, j) is used in the tour
+	@objective(model, Min, sum(d .* x))
+	@constraint(model, outflow[i in 1:n], sum(x[i, :]) == 1)
+	@constraint(model, inflow[i in 1:n], sum(x[:, i]) == 1)
+	@constraint(model, noself[i in 1:n], x[i, i] == 0)
+	@constraint(model, subtour1[i in 1:n, j in 1:n], x[i, j] + x[j, i] <= 1)
+	return TSPModel(dat, model, x, Dict())
 end
 
 # Returns a list of edges selected in solution `x`
 function selected_edges(x::Matrix{Float64})
 	n = size(x)[1]
-    return Tuple{Int,Int}[(i, j) for i in 1:n, j in 1:n if x[i, j] > TOL]
+	return Tuple{Int,Int}[(i, j) for i in 1:n, j in 1:n if x[i, j] > TOL]
 end
 
 # Adds the Miller-Tucker-Zemlin constraints to a TSPModel
@@ -83,65 +83,65 @@ function add_dfj_callback!(mdl::TSPModel)
 	# Identifies shortest subtour in solution given by vector of edges
 	function subtour(edges::Vector{Tuple{Int, Int}})
 		shortest_subtour, unvisited = collect(1:n), Set(collect(1:n))
-	    while !isempty(unvisited)
-	        this_cycle, neighbors = Int[], unvisited
-	        while !isempty(neighbors)
-	            current = pop!(neighbors)
-	            push!(this_cycle, current)
-	            if length(this_cycle) > 1
-	                pop!(unvisited, current)
-	            end
-	            neighbors =
-	                [j for (i, j) in edges if i == current && j in unvisited]
-	        end
-	        if length(this_cycle) < length(shortest_subtour)
-	            shortest_subtour = this_cycle
-	        end
-	    end
-	    return shortest_subtour
+		while !isempty(unvisited)
+			this_cycle, neighbors = Int[], unvisited
+			while !isempty(neighbors)
+				current = pop!(neighbors)
+				push!(this_cycle, current)
+				if length(this_cycle) > 1
+					pop!(unvisited, current)
+				end
+				neighbors =
+					[j for (i, j) in edges if i == current && j in unvisited]
+			end
+			if length(this_cycle) < length(shortest_subtour)
+				shortest_subtour = this_cycle
+			end
+		end
+		return shortest_subtour
 	end
 
 	# See https://jump.dev/JuMP.jl/stable/manual/callbacks/ for more about callbacks
 	# This callback lazily adds subtour elimination constraints to the original model
 	function subtour_elimination_callback(cb_data)
-	    
+		
 		# Only run at integer solutions
-	    status = callback_node_status(cb_data, model)
-	    if status != MOI.CALLBACK_NODE_STATUS_INTEGER
-	        return  
-	    end
+		status = callback_node_status(cb_data, model)
+		if status != MOI.CALLBACK_NODE_STATUS_INTEGER
+			return  
+		end
 
-	    # Get incumbent (integral) solution
-	    edges = selected_edges(callback_value.(cb_data, x))
-	    cycle = subtour(edges)
-	    
-	    # Solution is made of a single tour of length n
-	    if length(cycle) == n
-	        return
-	    end
+		# Get incumbent (integral) solution
+		edges = selected_edges(callback_value.(cb_data, x))
+		cycle = subtour(edges)
+		
+		# Solution is made of a single tour of length n
+		if length(cycle) == n
+			return
+		end
 
-	    # Save subtour
-	    if !haskey(mdl.aux, SOLN_KEY)
-	    	mdl.aux[SOLN_KEY] = [edges]
-	    	mdl.aux[SUBTOUR_KEY] = [cycle]
-	    else
-	    	push!(mdl.aux[SOLN_KEY], edges)
-	    	push!(mdl.aux[SUBTOUR_KEY], cycle)
-	    end
+		# Save subtour
+		if !haskey(mdl.aux, SOLN_KEY)
+			mdl.aux[SOLN_KEY] = [edges]
+			mdl.aux[SUBTOUR_KEY] = [cycle]
+		else
+			push!(mdl.aux[SOLN_KEY], edges)
+			push!(mdl.aux[SUBTOUR_KEY], cycle)
+		end
 
-	    # Add lazy constraint
-	    S = [(i, j) for (i, j) in Iterators.product(cycle, cycle)]
-	    con = @build_constraint(
-	        sum(x[i, j] for (i, j) in S) <= length(cycle) - 1,
-	    )
-	    MOI.submit(model, MOI.LazyConstraint(cb_data), con)
-	    return
+		# Add lazy constraint
+		S = [(i, j) for (i, j) in Iterators.product(cycle, cycle)]
+		con = @build_constraint(
+			sum(x[i, j] for (i, j) in S) <= length(cycle) - 1,
+		)
+		MOI.submit(model, MOI.LazyConstraint(cb_data), con)
+		return
 
 	end
 	set_attribute(
-	    model,
-	    MOI.LazyConstraintCallback(),
-	    subtour_elimination_callback,
+		model,
+		MOI.LazyConstraintCallback(),
+		subtour_elimination_callback,
 	)
 	return
 

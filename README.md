@@ -8,6 +8,12 @@ Notebooks and code in [Julia](https://julialang.org/) for COMM 612.
 2. Install Gurobi with a [free academic license](https://www.gurobi.com/features/academic-named-user-license/).
 3. You will need [IJulia](https://github.com/JuliaLang/IJulia.jl) to open and run my notebooks. Each notebook also includes package dependences in the header (e.g., [JuMP](https://github.com/jump-dev/JuMP.jl) and [Gurobi](https://github.com/jump-dev/Gurobi.jl)), which you should install before running the notebook. Check out the READMEs in each link if you have any issues.
 
+## Resources
+
+* [Julia Documentation](https://docs.julialang.org/en/v1/)
+* [Learn X in Y Minutes](https://learnxinyminutes.com/docs/julia/)
+* [JuMP's Julia Tutorial](https://jump.dev/JuMP.jl/stable/tutorials/getting_started/getting_started_with_julia/)
+
 ## Troubleshooting
 
 Please report any issues so that I can expand this list.

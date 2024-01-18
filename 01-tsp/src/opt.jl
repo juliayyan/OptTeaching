@@ -16,16 +16,15 @@ end
 Base.show(io::IO, mdl::TSPModel) = print(io, "TSP Model with $(mdl.dat.n) cities")
 
 # Constructor for core TSP model with degree constraints
-function TSPModel(dat::TSPInstance;
-	OutputFlag = 0,
-	TimeLimit = 60)
+function TSPModel(dat::TSPInstance; 
+	optimizer = Gurobi.Optimizer, 
+	silent = false)
 	n = dat.n
 	d = dat.d
-	model = Model(optimizer_with_attributes(
-		Gurobi.Optimizer, 
-		"OutputFlag" => OutputFlag,
-		"TimeLimit" => TimeLimit)
-	)
+	model = Model(optimizer)
+	if silent
+		JuMP.set_silent(model)
+	end
 	@variable(model, x[1:n, 1:n], Bin) # x[i, j] = 1 if edge (i, j) is used in the tour
 	@objective(model, Min, sum(d .* x))
 	@constraint(model, outflow[i in 1:n], sum(x[i, :]) == 1)

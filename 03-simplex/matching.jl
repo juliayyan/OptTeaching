@@ -11,6 +11,7 @@ optimizer = optimizer_with_attributes(() -> Gurobi.Optimizer(env),
 # A matching problem
 
 n = 2000
+Random.seed!(1)
 costs = rand(n, n)
 
 model = Model(optimizer)

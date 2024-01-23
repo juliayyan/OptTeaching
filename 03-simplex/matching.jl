@@ -4,7 +4,8 @@ using Random
 env = Gurobi.Env()
 optimizer = optimizer_with_attributes(() -> Gurobi.Optimizer(env), 
 	"Presolve" => 0, 
-	"Method" => 0, # 0 = primal simplex, 1 = dual simplex. Comment out this line for concurrent.
+	"Method" => 1, # 0 = primal simplex, 1 = dual simplex. Comment out this line for concurrent.
+	"Sifting"=> 0, # 0 = no sifting (this is column generation) 
 	"DisplayInterval" => 1,
 	"TimeLimit" => 30)
 

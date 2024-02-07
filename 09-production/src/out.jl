@@ -1,6 +1,6 @@
 using Plots
 
-TOL = 0.5
+TOL = 1e-5
 
 # Stores Production Planning solution and computational results
 struct ProductionSolution

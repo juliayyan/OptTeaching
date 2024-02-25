@@ -184,7 +184,7 @@ function HK_bound(dat::TSPInstanceInt, upper_bound::Int64)
     H_star = -(dat.n^2)
     alpha = 2
     beta = 0.5
-    num_iterations = dat.n*100
+    num_iterations = dat.n
 
     
     for c in 1:max_changes

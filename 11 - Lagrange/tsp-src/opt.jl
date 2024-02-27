@@ -25,11 +25,11 @@ Base.show(io::IO, mdl::TSPModel) = print(io, "TSP Model with $(mdl.dat.n) cities
 function TSPModel(dat::TSPInstanceInt;
     OutputFlag = 0,
     TimeLimit = 60,
-    environment = env)
+	silent = false)
     n = dat.n
     d = dat.d
 
-    optimizer = optimizer_with_attributes(() -> Gurobi.Optimizer(env), 
+    optimizer = optimizer_with_attributes(Gurobi.Optimizer, 
         "OutputFlag" => OutputFlag,
         "TimeLimit" => TimeLimit)
     model = Model(optimizer)
@@ -184,7 +184,7 @@ function HK_bound(dat::TSPInstanceInt, upper_bound::Int64)
     H_star = -(dat.n^2)
     alpha = 2
     beta = 0.5
-    num_iterations = dat.n
+    num_iterations = Int.(.1*dat.n)
 
     
     for c in 1:max_changes

@@ -71,9 +71,9 @@ function add_pattern!(
 	return
 end
 
-# Adds the simplest possible patterns to dat: 
+# Adds simple possible patterns to dat: 
 # For a given piece, as many pieces as can be cut from a roll
-function add_identity_patterns!(dat::StockInstance)
+function add_elementary_patterns!(dat::StockInstance)
 	for pc=1:dat.n_pieces
 		q = zeros(Int, dat.n_pieces)
 		q[pc] = floor(Int, dat.max_length/dat.pieces[pc].length)

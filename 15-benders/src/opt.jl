@@ -113,9 +113,6 @@ end
 function add_benders_callback!(mp::MasterProblem; tolerance::Float64 = 1e-5)
 
 	dat = mp.dat
-	
-	# This is needed to make sure Gurobi enters the B&B tree
-	generate_cut!(mp)
 
 	# See Benders progress
 	unset_silent(mp.model)

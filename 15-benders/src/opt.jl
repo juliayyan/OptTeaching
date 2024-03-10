@@ -8,16 +8,16 @@ Baseline: No decomposition
 ============================================#
 
 # Full, basic implementation of facility location problem (no decomposition)
-struct FacilityProblem
+struct FacilityModel
 	dat::FacilityInstance
 	model::JuMP.Model
 	y::Vector{JuMP.VariableRef}
 	x::Matrix{JuMP.VariableRef}
 end
-Base.show(io::IO, mp::FacilityProblem) = print(io, "Full Problem for $(mp.dat)")
+Base.show(io::IO, mp::FacilityModel) = print(io, "Full Problem for $(mp.dat)")
 
-# Constructor for FacilityProblem
-function FacilityProblem(dat::FacilityInstance)
+# Constructor for FacilityModel
+function FacilityModel(dat::FacilityInstance)
 	model = JuMP.Model(() -> Gurobi.Optimizer(env))
 	@variable(model, y[f = 1:dat.n_facilities], Bin)
 	@variable(model, x[c = 1:dat.n_customers, f = 1:dat.n_facilities] >= 0)
@@ -31,7 +31,7 @@ function FacilityProblem(dat::FacilityInstance)
 		Min,
 		dat.fixed_cost*sum(y) +
 		sum(dat.dist[c, f] * x[c, f] for c = 1:dat.n_customers, f = 1:dat.n_facilities))
-	return FacilityProblem(dat, model, y, x)
+	return FacilityModel(dat, model, y, x)
 end
 
 #============================================
@@ -44,6 +44,7 @@ struct MasterProblem
 	model::JuMP.Model
 	y::Vector{JuMP.VariableRef}
 	obj::JuMP.VariableRef
+	aux::Dict{Any, Any}
 end
 Base.show(io::IO, mp::MasterProblem) = print(io, "Master Problem for $(mp.dat)")
 
@@ -54,8 +55,8 @@ function MasterProblem(dat::FacilityInstance)
 	@variable(model, y[f = 1:dat.n_facilities], Bin)
 	@constraint(model, sum(y) >= 1) # So that we start with a solution with some facility open
 	@variable(model, obj >= 0)	# We can apply >= 0 because we know that the objective for this problem is positive
-	@objective(model, Min, dat.fixed_cost*sum(y) + sum(obj))
-	return MasterProblem(dat, model, y, obj)
+	@objective(model, Min, dat.fixed_cost*sum(y) + obj)
+	return MasterProblem(dat, model, y, obj, Dict())
 end
 
 # Returns the LHS and RHS of a cut of the form LHS >= RHS
@@ -67,8 +68,9 @@ function cut_expr(
 )
 	dat = mp.dat
 
+	open_facilities = findall(this_y .> EPSILON)
 	best_dist = [
-		minimum(dat.dist[c, findall(this_y .> EPSILON)])
+		minimum(dat.dist[c, open_facilities])
 		for c in 1:dat.n_customers
 	]
 	rhs(y) = sum(

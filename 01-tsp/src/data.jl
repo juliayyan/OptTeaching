@@ -11,16 +11,14 @@ Base.show(io::IO, dat::TSPInstance) = print(io, "TSP Instance with $(dat.n) citi
 # Constructor for TSPInstance
 function TSPInstance(n::Int; 
 	random_seed = 1, 
-	int::Bool = false, 	# if generating integer data
-	max_dist::Int = 100 # only relevant if generating integer data
+	int::Bool = false 	# if generating integer data
 )
 	Random.seed!(random_seed)
-	if !int
-		coords = rand(n, 2)
-		d = [sqrt(sum((coords[i, :] - coords[j, :]).^2)) for i in 1:n, j in 1:n] # L2
-	else
-		coords = rand(0:max_dist, n, 2)
-		d = [sum(abs.(coords[i, :] - coords[j, :])) for i in 1:n, j in 1:n] # L1
+	coords = rand(n, 2)
+	d = [sqrt(sum((coords[i, :] - coords[j, :]).^2)) for i in 1:n, j in 1:n]
+	if int
+		d = round.(Int, d*100)
 	end
+
 	return TSPInstance(n, coords, d)
 end

@@ -29,7 +29,8 @@ end
 function plot_tour(
 	dat::TSPInstance, 
 	edges::Vector{Tuple{Int,Int}};
-	highlight::Vector{Int} = Int[]
+	highlight::Vector{Int} = Int[], 
+	plot_title::String = ""
 )
 	plt = Plots.plot()
 	for (i, j) in edges
@@ -40,7 +41,9 @@ function plot_tour(
 			lc=color, lw=2; 
 			legend = false)
 	end
+	title!(plot_title)
 	return plt
 end
 # Overload function
-plot_tour(solution::TSPSolution) = plot_tour(solution.dat, solution.edges)
+plot_tour(solution::TSPSolution) = plot_tour(solution.dat, solution.edges, 
+	plot_title = "Cost = $(round(solution.objective_value, digits=2))")
